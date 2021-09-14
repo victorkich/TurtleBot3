@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="gym_turtlebot3",
+    name="TurtleBot3_gym",
     version="0.0.1",
-    author="Eduardo Avelar",
-    author_email="eavelardev@gmail.com",
-    description="Gym env for TurtleBot3 robot",
+    author="Victor Augusto Kich",
+    author_email="victorkich@yahoo.comb.br",
+    description="Gym environment for TurtleBot3 burger",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ITTcs/gym-turtlebot3",
+    url="https://github.com/victorkich/RL-RiGAN",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
