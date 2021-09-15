@@ -1,5 +1,7 @@
-import gym
+#! /usr/bin/env python3
+
 import rospy
+import gym
 import numpy as np
 import math
 import time
@@ -27,9 +29,10 @@ class TurtleBot3Env(gym.Env):
         self.initGoal = True
         self.get_goalbox = False
         self.position = Pose()
+
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
-        self.sub_image = rospy.Subscriber('image', CompressedImage, self.getImage)
+        self.sub_image = rospy.Subscriber('camera/rgb/image_raw/compressed', CompressedImage, self.getImage, queue_size=10)
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
@@ -161,7 +164,7 @@ class TurtleBot3Env(gym.Env):
                     done = True
                     self.episode_finished()
 
-        return self.get_env_state() + [heading, current_distance], done
+        return [self.get_env_state(), heading, current_distance], done
 
     def navigationReward(self, heading):
         reference = 1 - 2 * abs(heading) / math.pi
@@ -183,7 +186,7 @@ class TurtleBot3Env(gym.Env):
         elif done:
             reward = self.reward_collision =- 200
             self.pub_cmd_vel.publish(Twist())
-            if self.respawn_goal.last_index is not 0:
+            if self.respawn_goal.last_index != 0:
                 self.respawn_goal.initIndex()
                 self.goal_x, self.goal_y = self.respawn_goal.getPosition()
                 self.goal_distance = self._getGoalDistace()
@@ -218,8 +221,8 @@ class TurtleBot3Env(gym.Env):
         state, done = self.getState(data)
         reward = self.setReward(state, done, action)
         self.num_timesteps += 1
-
-        return np.asarray(state), reward, done, {}
+        # np.asarray(state)
+        return state, reward, done, {}
 
     def reset(self):
         rospy.wait_for_service('gazebo/reset_simulation')
@@ -242,10 +245,10 @@ class TurtleBot3Env(gym.Env):
 
         self.goal_distance = self._getGoalDistace()
         state, _ = self.getState(data)
+        # np.asarray(state)
+        return state
 
-        return np.asarray(state)
-
-    def render(self, mode=None):
+    def render(self, mode=True):
         pass
 
     def close(self):
