@@ -87,8 +87,8 @@ class TurtleBot3Env(gym.Env):
 
     def get_observation_space_values(self):
         low = np.append(np.full(self.observation_size, self.min_range), np.array([-math.pi, 0], dtype=np.float32))
-        high = np.append(np.full(self.observation_size, self.max_range),
-                             np.array([math.pi, self.max_env_size], dtype=np.float32))
+        high = np.append(np.full(self.observation_size, self.max_range), np.array([math.pi, self.max_env_size],
+                                                                                  dtype=np.float32))
         return low, high
 
     def _getGoalDistace(self):
@@ -164,7 +164,7 @@ class TurtleBot3Env(gym.Env):
                     done = True
                     self.episode_finished()
 
-        return [self.get_env_state(), heading, current_distance], done
+        return self.get_env_state() + [heading, current_distance], done
 
     def navigationReward(self, heading):
         reference = 1 - 2 * abs(heading) / math.pi
@@ -222,7 +222,7 @@ class TurtleBot3Env(gym.Env):
         reward = self.setReward(state, done, action)
         self.num_timesteps += 1
         # np.asarray(state)
-        return state, reward, done, {}
+        return np.asarray(state), reward, done, {}
 
     def reset(self):
         rospy.wait_for_service('gazebo/reset_simulation')
@@ -245,8 +245,8 @@ class TurtleBot3Env(gym.Env):
 
         self.goal_distance = self._getGoalDistace()
         state, _ = self.getState(data)
-        # np.asarray(state)
-        return state
+
+        return np.asarray(state)
 
     def render(self, mode=True):
         pass
