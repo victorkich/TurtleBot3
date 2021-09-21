@@ -242,6 +242,8 @@ class TurtleBot3Env(gym.Env):
             self.goal_x, self.goal_y = self.respawn_goal.getPosition()
             self.initGoal = False
             time.sleep(1)
+        else:
+            self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
 
         self.goal_distance = self._getGoalDistace()
         state, _ = self.getState(data)
