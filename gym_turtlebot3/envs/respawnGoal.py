@@ -29,8 +29,10 @@ from geometry_msgs.msg import Pose
 class Respawn():
     def __init__(self):
         rospack = rospkg.RosPack()
-        
-        self.modelPath = os.path.dirname(rospack.get_path('turtlebot3_gazebo')+'/models/turtlebot3_square/goal_box/model.sdf')
+        self.modelPath =os.path.join(rospack.get_path('turtlebot3_gazebo'), 'models/turtlebot3_square/goal_box/model.sdf')
+        print(self.modelPath)
+        self.f = open(self.modelPath, 'r')
+        self.model = self.f.read()
         self.goal_position = Pose()
         self.goal_x_list = None
         self.goal_y_list = None
