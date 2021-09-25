@@ -20,7 +20,7 @@ from gym_turtlebot3.envs import Respawn
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, goal_list=None, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, const_linear_vel=0.15,
-                 goalbox_distance=0.35, collision_distance=0.13, reward_goal=200, reward_collision=-200, angle_out=135):
+                 goalbox_distance=0.35, collision_distance=0.2, reward_goal=200, reward_collision=-200, angle_out=250):
 
         self.goal_x = 0
         self.goal_y = 0
