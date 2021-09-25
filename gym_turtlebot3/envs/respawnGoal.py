@@ -26,10 +26,11 @@ from gazebo_msgs.srv import SpawnModel, DeleteModel
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose
 
+
 class Respawn():
     def __init__(self):
         rospack = rospkg.RosPack()
-        self.modelPath =os.path.join(rospack.get_path('turtlebot3_gazebo'), 'models/turtlebot3_square/goal_box/model.sdf')
+        self.modelPath = os.path.join(rospack.get_path('turtlebot3_gazebo'), 'models/turtlebot3_square/goal_box/model.sdf')
         print(self.modelPath)
         self.f = open(self.modelPath, 'r')
         self.model = self.f.read()
@@ -44,8 +45,8 @@ class Respawn():
         self.goal_position.position.x = None
         self.goal_position.position.y = None
         self.modelName = 'goal'
-        self.sub_model = rospy.Subscriber('gazebo/model_states', ModelStates, self.checkModel)
         self.check_model = False
+        self.sub_model = rospy.Subscriber('gazebo/model_states', ModelStates, self.checkModel)
         
     def checkModel(self, model):
         self.check_model = False
@@ -59,8 +60,8 @@ class Respawn():
                 rospy.wait_for_service('gazebo/spawn_sdf_model')
                 spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
                 spawn_model_prox(self.modelName, self.model, 'robotos_name_space', self.goal_position, "world")
-                rospy.loginfo("Goal position : %.1f, %.1f", self.goal_position.position.x,
-                              self.goal_position.position.y)
+                # rospy.loginfo("Goal position : %.1f, %.1f", self.goal_position.position.x,
+                #              self.goal_position.position.y)
                 break
             else:
                 pass
@@ -90,11 +91,9 @@ class Respawn():
         self.initIndex()
 
     def getPosition(self, position_check=False, delete=False):
-        
         if delete:
             self.deleteModel()
-            
-        
+
         if position_check:
             self.index = (self.last_index + 1) % self.len_goal_list
             self.last_index = self.index

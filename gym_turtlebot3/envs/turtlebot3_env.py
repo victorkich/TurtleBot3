@@ -19,8 +19,9 @@ from gym_turtlebot3.envs import Respawn
 
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, goal_list=None, max_env_size=None, continuous=False, observation_size=24,
-                 action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, const_linear_vel=0.15,
-                 goalbox_distance=0.35, collision_distance=0.2, reward_goal=200, reward_collision=-200, angle_out=250):
+                 action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel = -0.5,
+                 max_linear_vel = 0.5, goalbox_distance=0.35, collision_distance=0.22, reward_goal=200,
+                 reward_collision=-200, angle_out=250):
 
         self.goal_x = 0
         self.goal_y = 0
@@ -42,11 +43,12 @@ class TurtleBot3Env(gym.Env):
 
         self.observation_mode = observation_mode
         self.observation_size = observation_size
-        self.const_linear_vel = const_linear_vel
         self.min_range = min_range
         self.max_range = max_range
         self.min_ang_vel = min_ang_vel
         self.max_ang_vel = max_ang_vel
+        self.min_linear_vel = min_linear_vel
+        self.max_linear_vel = max_linear_vel
         self.goalbox_distance = goalbox_distance
         self.collision_distance = collision_distance
         self.reward_goal = reward_goal
@@ -69,6 +71,7 @@ class TurtleBot3Env(gym.Env):
         self.num_timesteps = 0
         self.lidar_distances = None
         self.ang_vel = 0
+        self.linear_vel = 0
 
         self.start_time = time.time()
         self.last_step_time = self.start_time
@@ -80,9 +83,9 @@ class TurtleBot3Env(gym.Env):
         return [seed]
 
     def get_action_space_values(self):
-        low = self.min_ang_vel
-        high = self.max_ang_vel
-        shape_value = 1
+        low = np.array([self.min_ang_vel, self.min_linear_vel])
+        high = np.array([self.max_ang_vel, self.max_linear_vel])
+        shape_value = 2
         return low, high, shape_value
 
     def get_observation_space_values(self):
@@ -179,10 +182,9 @@ class TurtleBot3Env(gym.Env):
         if self.get_goalbox:
             reward = self.reward_goal
             self.pub_cmd_vel.publish(Twist())
-            self.goal_x, self.goal_y = self.respawn_goal.getPosition(True)
+            self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
-
         elif done:
             reward = self.reward_collision =- 200
             self.pub_cmd_vel.publish(Twist())
@@ -190,10 +192,10 @@ class TurtleBot3Env(gym.Env):
                 self.respawn_goal.initIndex()
                 self.goal_x, self.goal_y = self.respawn_goal.getPosition()
                 self.goal_distance = self._getGoalDistace()
-
         else:
-            heading = state[-2]
-            reward = self.navigationReward(heading)
+            reward = -2
+            # heading = state[-2]
+            # reward = self.navigationReward(heading)
 
         return reward
 
@@ -203,11 +205,18 @@ class TurtleBot3Env(gym.Env):
         else:
             self.ang_vel = self.actions[action]
 
+    def set_linear_vel(self, action):
+        if self.continuous:
+            self.linear_vel = action
+        else:
+            self.linear_vel = self.actions[action]
+
     def step(self, action):
-        self.set_ang_vel(action)
+        self.set_ang_vel(np.clip(action[0], self.min_ang_vel, self.max_ang_vel))
+        self.set_linear_vel(np.clip(action[1], self.min_linear_vel, self.max_linear_vel))
 
         vel_cmd = Twist()
-        vel_cmd.linear.x = self.const_linear_vel
+        vel_cmd.linear.x = self.linear_vel
         vel_cmd.angular.z = self.ang_vel
         self.pub_cmd_vel.publish(vel_cmd)
 
