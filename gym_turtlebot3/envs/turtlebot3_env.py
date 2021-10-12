@@ -15,13 +15,15 @@ from gym import spaces
 from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
+import warnings
+warnings.simplefilter("ignore")
 
 
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, goal_list=None, max_env_size=None, continuous=False, observation_size=24,
-                 action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel = -0.5,
-                 max_linear_vel = 0.5, goalbox_distance=0.35, collision_distance=0.22, reward_goal=200,
-                 reward_collision=-200, angle_out=250):
+                 action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
+                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.17, reward_goal=200.,
+                 reward_collision=-20, angle_out=250):
 
         self.goal_x = 0
         self.goal_y = 0
@@ -39,6 +41,7 @@ class TurtleBot3Env(gym.Env):
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         self.respawn_goal = Respawn()
 
+        goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(50)])
         self.respawn_goal.setGoalList(goal_list)
 
         self.observation_mode = observation_mode
@@ -59,14 +62,14 @@ class TurtleBot3Env(gym.Env):
 
         if self.continuous:
             low, high, shape_value = self.get_action_space_values()
-            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,), dtype=np.float32)
+            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,))
         else:
             self.action_space = spaces.Discrete(action_size)
             ang_step = max_ang_vel / ((action_size - 1) / 2)
             self.actions = [((action_size - 1) / 2 - action) * ang_step for action in range(action_size)]
 
         low, high = self.get_observation_space_values()
-        self.observation_space = spaces.Box(low, high, dtype=np.float32)
+        self.observation_space = spaces.Box(low, high)
 
         self.num_timesteps = 0
         self.lidar_distances = None
@@ -152,22 +155,22 @@ class TurtleBot3Env(gym.Env):
         current_distance = self._getGoalDistace()
 
         if min(self.lidar_distances) < self.collision_distance:
-            print(f'{time_info}: Collision!!')
+            # print(f'{time_info}: Collision!!')
             done = True
 
         if abs(heading) > math.radians(self.angle_out):
-            print(f'{time_info}: Out of angle')
+            # print(f'{time_info}: Out of angle')
             done = True
 
         if current_distance < self.goalbox_distance:
             if not done:
-                print(f'{time_info}: Goal!!')
+                # print(f'{time_info}: Goal!!')
                 self.get_goalbox = True
                 if self.respawn_goal.last_index is (self.respawn_goal.len_goal_list - 1):
                     done = True
                     self.episode_finished()
 
-        return self.get_env_state() + [heading, current_distance], done
+        return self.get_env_state(), done  # + [heading, current_distance], done
 
     def navigationReward(self, heading):
         reference = 1 - 2 * abs(heading) / math.pi
@@ -186,14 +189,14 @@ class TurtleBot3Env(gym.Env):
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
         elif done:
-            reward = self.reward_collision =- 200
+            reward = self.reward_collision =- 20.
             self.pub_cmd_vel.publish(Twist())
             if self.respawn_goal.last_index != 0:
                 self.respawn_goal.initIndex()
-                self.goal_x, self.goal_y = self.respawn_goal.getPosition()
+                self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
                 self.goal_distance = self._getGoalDistace()
         else:
-            reward = -2
+            reward = 0.
             # heading = state[-2]
             # reward = self.navigationReward(heading)
 
@@ -233,7 +236,10 @@ class TurtleBot3Env(gym.Env):
         # np.asarray(state)
         return np.asarray(state), reward, done, {}
 
-    def reset(self):
+    def reset(self, new_random_goals=False):
+        if new_random_goals:
+            self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1., -1.), (1., 1.)) for _ in range(50)]))
+
         rospy.wait_for_service('gazebo/reset_simulation')
         try:
             self.reset_proxy()

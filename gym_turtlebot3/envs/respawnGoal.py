@@ -31,7 +31,7 @@ class Respawn():
     def __init__(self):
         rospack = rospkg.RosPack()
         self.modelPath = os.path.join(rospack.get_path('turtlebot3_gazebo'), 'models/turtlebot3_square/goal_box/model.sdf')
-        print(self.modelPath)
+        # print(self.modelPath)
         self.f = open(self.modelPath, 'r')
         self.model = self.f.read()
         self.goal_position = Pose()
@@ -101,7 +101,7 @@ class Respawn():
             self.goal_position.position.x = self.goal_x_list[self.index]
             self.goal_position.position.y = self.goal_y_list[self.index]
 
-        print(f'New goal position: {self.goal_position.position.x:.2f}, {self.goal_position.position.y:.2f}')
+        # print(f'New goal position: {self.goal_position.position.x:.2f}, {self.goal_position.position.y:.2f}')
         time.sleep(0.5)
         self.respawnModel()
         return self.goal_position.position.x, self.goal_position.position.y
