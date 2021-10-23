@@ -179,7 +179,7 @@ class TurtleBot3Env(gym.Env):
     def navigationReward(self):
         actual_distance = self._getGoalDistace()
         if self.old_distance > actual_distance:
-            reward = (self.old_distance - actual_distance) * 100
+            reward = (self.old_distance - actual_distance) * 100.
             self.old_distance = actual_distance
         else:
             reward = 0.
