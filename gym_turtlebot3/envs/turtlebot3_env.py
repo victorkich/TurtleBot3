@@ -16,7 +16,7 @@ from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
 import warnings
-# warnings.simplefilter("ignore")
+warnings.simplefilter("ignore")
 
 
 class TurtleBot3Env(gym.Env):
@@ -78,7 +78,7 @@ class TurtleBot3Env(gym.Env):
 
         self.start_time = time.time()
         self.last_step_time = self.start_time
-        self.old_distance = 0
+        self.old_distance = self._getGoalDistace()
 
         self.seed()
 
@@ -261,6 +261,7 @@ class TurtleBot3Env(gym.Env):
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
 
         self.goal_distance = self._getGoalDistace()
+        self.old_distance = self._getGoalDistace()
         state, _ = self.getState(data)
 
         return np.asarray(state)
