@@ -16,14 +16,14 @@ from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
 import warnings
-warnings.simplefilter("ignore")
+# warnings.simplefilter("ignore")
 
 
 class TurtleBot3Env(gym.Env):
-    def __init__(self, observation_mode=0, goal_list=None, max_env_size=None, continuous=False, observation_size=24,
+    def __init__(self, observation_mode=0, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
                  max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.17, reward_goal=200.,
-                 reward_collision=-20, angle_out=250):
+                 reward_collision=-20, angle_out=250, goal_list=None):
 
         self.goal_x = 0
         self.goal_y = 0
@@ -78,6 +78,7 @@ class TurtleBot3Env(gym.Env):
 
         self.start_time = time.time()
         self.last_step_time = self.start_time
+        self.old_distance = 0
 
         self.seed()
 
@@ -170,18 +171,21 @@ class TurtleBot3Env(gym.Env):
                     done = True
                     self.episode_finished()
 
-        return self.get_env_state(), done  # + [heading, current_distance], done
+        if self.observation_mode == 0:
+            return self.get_env_state() + [heading, current_distance], done
+        else:
+            return [self.get_env_state(), heading, current_distance], done
 
-    def navigationReward(self, heading):
-        reference = 1 - 2 * abs(heading) / math.pi
-        reward = 5 * (reference ** 2)
-
-        if reference < 0:
-            reward = -reward
-
+    def navigationReward(self):
+        actual_distance = self._getGoalDistace()
+        if self.old_distance > actual_distance:
+            reward = self.old_distance - actual_distance
+            self.old_distance = actual_distance
+        else:
+            reward = 0.
         return reward
 
-    def setReward(self, state, done, action):
+    def setReward(self, done):
         if self.get_goalbox:
             reward = self.reward_goal
             self.pub_cmd_vel.publish(Twist())
@@ -196,10 +200,7 @@ class TurtleBot3Env(gym.Env):
                 self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
                 self.goal_distance = self._getGoalDistace()
         else:
-            reward = 0.
-            # heading = state[-2]
-            # reward = self.navigationReward(heading)
-
+            reward = self.navigationReward()
         return reward
 
     def set_ang_vel(self, action):
@@ -231,9 +232,8 @@ class TurtleBot3Env(gym.Env):
                 pass
 
         state, done = self.getState(data)
-        reward = self.setReward(state, done, action)
+        reward = self.setReward(done)
         self.num_timesteps += 1
-        # np.asarray(state)
         return np.asarray(state), reward, done, {}
 
     def reset(self, new_random_goals=False):
