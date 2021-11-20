@@ -43,6 +43,8 @@ class TurtleBot3Env(gym.Env):
 
         if not goal_list:
             goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)])
+        else:
+            goal_list = np.array(goal_list)
         self.respawn_goal.setGoalList(goal_list)
 
         self.observation_mode = observation_mode
