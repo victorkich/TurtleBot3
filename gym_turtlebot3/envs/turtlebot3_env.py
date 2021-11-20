@@ -41,7 +41,7 @@ class TurtleBot3Env(gym.Env):
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         self.respawn_goal = Respawn()
 
-        if goal_list == None:
+        if not goal_list:
             goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)])
         self.respawn_goal.setGoalList(goal_list)
 
@@ -209,10 +209,10 @@ class TurtleBot3Env(gym.Env):
         self.num_timesteps += 1
         return np.asarray(state), reward, done, {}
 
-    def get_position():
+    def get_position(self):
         return [self.position.x, self.position.y]
 
-    def get_scan():
+    def get_scan(self):
         return self.lidar_distances
 
     def reset(self, new_random_goals=False, goal=None):
