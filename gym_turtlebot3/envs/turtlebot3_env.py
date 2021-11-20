@@ -16,12 +16,12 @@ from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
 import warnings
-warnings.simplefilter("ignore")
+warnings.filterwarnings("ignore")
 
 
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, max_env_size=None, continuous=False, observation_size=24,
-                 action_size=5, min_range=0.13, max_range=3.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
+                 action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
                  max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.17, reward_goal=200.,
                  reward_collision=-20, angle_out=250, goal_list=None):
 
@@ -32,10 +32,13 @@ class TurtleBot3Env(gym.Env):
         self.initGoal = True
         self.get_goalbox = False
         self.position = Pose()
+        self.scan = LaserScan()
 
+        #self.sub_scan = rospy.Publisher('scan', LaserScan, self.getScan)
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
-        self.sub_image = rospy.Subscriber('camera/rgb/image_raw/compressed', CompressedImage, self.getImage, queue_size=10)
+        # self.sub_image = rospy.Subscriber('camera/rgb/image_raw/compressed', CompressedImage, self.getImage, queue_size=10)
+
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
@@ -78,7 +81,7 @@ class TurtleBot3Env(gym.Env):
 
         self.start_time = time.time()
         self.last_step_time = self.start_time
-        self.old_distance = self._getGoalDistace()
+        # self.old_distance = self._getGoalDistace()
 
         self.seed()
 
@@ -102,6 +105,9 @@ class TurtleBot3Env(gym.Env):
         goal_distance = round(math.hypot(self.goal_x - self.position.x, self.goal_y - self.position.y), 2)
         return goal_distance
 
+    # def getScan(self, scan):
+    #    self.scan = scan
+
     def getOdometry(self, odom):
         self.position = odom.pose.pose.position
         orientation = odom.pose.pose.orientation
@@ -118,8 +124,8 @@ class TurtleBot3Env(gym.Env):
 
         self.heading = heading
 
-    def getImage(self, image):
-        self.image = image.data
+    #def getImage(self, image):
+    #    self.image = image.data
 
     def get_time_info(self):
         time_info = time.strftime("%H:%M:%S", time.gmtime(time.time() - self.start_time))
@@ -133,10 +139,10 @@ class TurtleBot3Env(gym.Env):
         return scan_range
 
     def get_env_state(self):
-        if self.observation_mode == 0:
-            return self.lidar_distances
-        elif self.observation_mode == 1:
-            return cv2.imdecode(np.frombuffer(self.image, np.uint8), cv2.IMREAD_COLOR)
+        # if self.observation_mode == 0:
+        return self.lidar_distances
+        # elif self.observation_mode == 1:
+        #    return cv2.imdecode(np.frombuffer(self.image, np.uint8), cv2.IMREAD_COLOR)
 
     def getState(self, scan):
         scan_range = []
@@ -171,10 +177,10 @@ class TurtleBot3Env(gym.Env):
                     done = True
                     self.episode_finished()
 
-        if self.observation_mode == 0:
-            return self.get_env_state() + [heading, current_distance], done
-        else:
-            return [self.get_env_state(), heading, current_distance], done
+        #if self.observation_mode == 0:
+        return self.get_env_state() + [heading, current_distance], done
+        # else:
+        #    return [self.get_env_state(), heading, current_distance], done
 
     def navigationReward(self):
         actual_distance = self._getGoalDistace()
@@ -200,7 +206,7 @@ class TurtleBot3Env(gym.Env):
                 self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
                 self.goal_distance = self._getGoalDistace()
         else:
-            reward = self.navigationReward()
+            reward = 0  # self.navigationReward()
         return reward
 
     def set_ang_vel(self, action):
@@ -227,8 +233,8 @@ class TurtleBot3Env(gym.Env):
         data = None
         while data is None:
             try:
-                data = rospy.wait_for_message('scan', LaserScan, timeout=5)
-            except:
+                data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
+            except Exception:
                 pass
 
         state, done = self.getState(data)
@@ -238,7 +244,7 @@ class TurtleBot3Env(gym.Env):
 
     def reset(self, new_random_goals=False):
         if new_random_goals:
-            self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1., -1.), (1., 1.)) for _ in range(50)]))
+            self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
 
         rospy.wait_for_service('gazebo/reset_simulation')
         try:
@@ -260,8 +266,7 @@ class TurtleBot3Env(gym.Env):
         else:
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
 
-        self.goal_distance = self._getGoalDistace()
-        self.old_distance = self._getGoalDistace()
+        self.goal_distance = self.old_distance = self._getGoalDistace()
         state, _ = self.getState(data)
 
         return np.asarray(state)
