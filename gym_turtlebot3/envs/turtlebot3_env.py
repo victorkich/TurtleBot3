@@ -218,7 +218,7 @@ class TurtleBot3Env(gym.Env):
     def reset(self, new_random_goals=False, goal=None):
         if new_random_goals:
             self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
-        if not goal == None:
+        if not goal:
             self.respawn_goal.setGoalList(goal)
 
         rospy.wait_for_service('gazebo/reset_simulation')
