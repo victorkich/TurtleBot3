@@ -217,11 +217,10 @@ class TurtleBot3Env(gym.Env):
     def get_scan(self):
         return self.lidar_distances
 
-    def reset(self, new_random_goals=False, goal=None):
+    def reset(self, new_random_goals=True, goal=None):
         if new_random_goals:
             self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
-        if not goal:
-            print('Passou')
+        else:
             self.respawn_goal.setGoalList(np.array(goal))
 
         rospy.wait_for_service('gazebo/reset_simulation')
