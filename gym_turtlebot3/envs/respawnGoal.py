@@ -18,7 +18,6 @@
 # Authors: Gilbert, Eduardo #
 
 import rospy
-import random
 import time
 import os
 import rospkg
@@ -60,8 +59,6 @@ class Respawn():
                 rospy.wait_for_service('gazebo/spawn_sdf_model')
                 spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
                 spawn_model_prox(self.modelName, self.model, 'robotos_name_space', self.goal_position, "world")
-                # rospy.loginfo("Goal position : %.1f, %.1f", self.goal_position.position.x,
-                #              self.goal_position.position.y)
                 break
             else:
                 pass
@@ -101,7 +98,6 @@ class Respawn():
             self.goal_position.position.x = self.goal_x_list[self.index]
             self.goal_position.position.y = self.goal_y_list[self.index]
 
-        # print(f'New goal position: {self.goal_position.position.x:.2f}, {self.goal_position.position.y:.2f}')
         time.sleep(0.5)
         self.respawnModel()
         return self.goal_position.position.x, self.goal_position.position.y
