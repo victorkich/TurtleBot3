@@ -20,9 +20,9 @@ warnings.filterwarnings("ignore")
 
 
 class TurtleBot3Env(gym.Env):
-    def __init__(self, observation_mode=0, max_env_size=None, continuous=False, observation_size=24,
+    def __init__(self, observation_mode=0, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
-                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.17, reward_goal=200.,
+                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.13, reward_goal=200.,
                  reward_collision=-20, angle_out=250, goal_list=None):
 
         self.goal_x = 0
@@ -32,6 +32,7 @@ class TurtleBot3Env(gym.Env):
         self.initGoal = True
         self.get_goalbox = False
         self.position = Pose()
+        self.env_stage = env_stage
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
@@ -42,7 +43,10 @@ class TurtleBot3Env(gym.Env):
         self.respawn_goal = Respawn()
 
         if not goal_list:
-            goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)])
+            if self.env_stage == 1 or self.env_stage == 2:
+                goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)])
+            else:
+                goal_list = np.array([np.random.uniform((0, 0), (3, -3)) for _ in range(1)])
         else:
             goal_list = np.array(goal_list)
         self.respawn_goal.setGoalList(goal_list)
@@ -219,7 +223,10 @@ class TurtleBot3Env(gym.Env):
 
     def reset(self, new_random_goals=True, goal=None):
         if new_random_goals:
-            self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+            if self.env_stage == 1 or self.env_stage == 2:
+                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+            else:
+                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
         else:
             self.respawn_goal.setGoalList(np.array(goal))
 
