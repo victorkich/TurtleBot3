@@ -15,8 +15,6 @@ from gym import spaces
 from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
-import warnings
-warnings.filterwarnings("ignore")
 
 
 class TurtleBot3Env(gym.Env):
@@ -35,6 +33,7 @@ class TurtleBot3Env(gym.Env):
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
+        self.sub_image = rospy.Subscriber('/usb_cam/image_raw', CompressedImage, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
@@ -130,7 +129,7 @@ class TurtleBot3Env(gym.Env):
     def get_env_state(self):
         return self.lidar_distances
 
-    def getState(self, scan):
+    def getState(self, scan, test_real=False):
         scan_range = []
         heading = self.heading
         done = False
@@ -144,9 +143,12 @@ class TurtleBot3Env(gym.Env):
                 scan_range.append(scan.ranges[i])
 
         self.lidar_distances = scan_range
+
+        if test_real:
+            return [self.get_env_state(), self.image]
+
         time_info = self.get_time_info()
         current_distance = self._getGoalDistace()
-
         if min(self.lidar_distances) < self.collision_distance:
             # print(f'{time_info}: Collision!!')
             done = True
@@ -159,6 +161,21 @@ class TurtleBot3Env(gym.Env):
                     done = True
                     self.episode_finished()
         return self.get_env_state() + [heading, current_distance], done
+
+    def get_done_reward(self, lidar, distance):
+        done = False
+        self.lidar_distances = lidar
+        if min(self.lidar_distances) < self.collision_distance:
+            done = True
+
+        if distance < self.goalbox_distance:
+            if not done:
+                self.get_goalbox = True
+                if self.respawn_goal.last_index is (self.respawn_goal.len_goal_list - 1):
+                    done = True
+
+        reward = self.setReward(done)
+        return reward, done
 
     def setReward(self, done):
         if self.get_goalbox:
@@ -190,7 +207,7 @@ class TurtleBot3Env(gym.Env):
         else:
             self.linear_vel = self.actions[action]
 
-    def step(self, action):
+    def step(self, action, test_real=False):
         self.set_ang_vel(np.clip(action[0], self.min_ang_vel, self.max_ang_vel))
         self.set_linear_vel(np.clip(action[1], self.min_linear_vel, self.max_linear_vel))
 
@@ -206,10 +223,16 @@ class TurtleBot3Env(gym.Env):
             except Exception:
                 pass
 
-        state, done = self.getState(data)
-        reward = self.setReward(done)
+        if test_real:
+            state = self.getState(data, test_real=test_real)
+        else:
+            state, done = self.getState(data)
+            reward = self.setReward(done)
         self.num_timesteps += 1
-        return np.asarray(state), reward, done, {}
+        if test_real:
+            return np.asarray(state)
+        else:
+            return np.asarray(state), reward, done, {}
 
     def get_position(self):
         return [self.position.x, self.position.y]
@@ -217,7 +240,10 @@ class TurtleBot3Env(gym.Env):
     def get_scan(self):
         return self.lidar_distances
 
-    def reset(self, new_random_goals=True, goal=None):
+    def getImage(self, image):
+        self.image = image.data
+
+    def reset(self, new_random_goals=True, goal=None, test_real=False):
         if new_random_goals:
             self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
         else:
@@ -244,7 +270,7 @@ class TurtleBot3Env(gym.Env):
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
 
         self.goal_distance = self.old_distance = self._getGoalDistace()
-        state, _ = self.getState(data)
+        state, _ = self.getState(data, test_real=test_real)
 
         return np.asarray(state)
 
