@@ -26,7 +26,7 @@ from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose
 
 
-class Respawn():
+class Respawn:
     def __init__(self):
         rospack = rospkg.RosPack()
         self.modelPath = os.path.join(rospack.get_path('turtlebot3_gazebo'), 'models/turtlebot3_square/goal_box/model.sdf')

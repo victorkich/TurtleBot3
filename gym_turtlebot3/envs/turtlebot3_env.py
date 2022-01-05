@@ -5,7 +5,7 @@ import gym
 import numpy as np
 import math
 import time
-import cv2
+from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist, Point, Pose
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import LaserScan
@@ -34,7 +34,7 @@ class TurtleBot3Env(gym.Env):
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
-        self.sub_image = rospy.Subscriber('/usb_cam/image_raw', CompressedImage, self.getImage, queue_size=1)
+        self.sub_image = rospy.Subscriber('usb_cam/image_raw', CompressedImage, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
@@ -65,6 +65,7 @@ class TurtleBot3Env(gym.Env):
         self.angle_out = angle_out
         self.continuous = continuous
         self.max_env_size = max_env_size
+        self.bridge = CvBridge()
 
         if self.continuous:
             low, high, shape_value = self.get_action_space_values()
@@ -245,7 +246,7 @@ class TurtleBot3Env(gym.Env):
         return self.lidar_distances
 
     def getImage(self, image):
-        self.image = image.data
+        self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
 
     def reset(self, new_random_goals=True, goal=None, test_real=False):
         if new_random_goals:
