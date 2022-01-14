@@ -21,7 +21,7 @@ class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
                  max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.13, reward_goal=200.,
-                 reward_collision=-20, angle_out=250, goal_list=None):
+                 reward_collision=-20, angle_out=250, goal_list=None, test_real=False):
 
         self.goal_x = 0
         self.goal_y = 0
@@ -31,6 +31,7 @@ class TurtleBot3Env(gym.Env):
         self.get_goalbox = False
         self.position = Pose()
         self.env_stage = env_stage
+        self.test_real = test_real
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel_001', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom_001', Odometry, self.getOdometry)
@@ -134,7 +135,7 @@ class TurtleBot3Env(gym.Env):
     def get_env_state(self):
         return self.lidar_distances
 
-    def getState(self, scan, test_real=False):
+    def getState(self, scan):
         scan_range = []
         heading = self.heading
         done = False
@@ -149,7 +150,7 @@ class TurtleBot3Env(gym.Env):
 
         self.lidar_distances = scan_range
 
-        if test_real:
+        if self.test_real:
             return [self.get_env_state(), self.image]
 
         time_info = self.get_time_info()
@@ -212,7 +213,7 @@ class TurtleBot3Env(gym.Env):
         else:
             self.linear_vel = self.actions[action]
 
-    def step(self, action, test_real=False):
+    def step(self, action):
         self.set_ang_vel(np.clip(action[0], self.min_ang_vel, self.max_ang_vel))
         self.set_linear_vel(np.clip(action[1], self.min_linear_vel, self.max_linear_vel))
 
@@ -228,8 +229,8 @@ class TurtleBot3Env(gym.Env):
             except Exception:
                 pass
 
-        if test_real:
-            state = self.getState(data, test_real=test_real)
+        if self.test_real:
+            state = self.getState(data)
         else:
             state, done = self.getState(data)
             reward = self.setReward(done)
@@ -248,7 +249,7 @@ class TurtleBot3Env(gym.Env):
     def getImage(self, image):
         self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
 
-    def reset(self, new_random_goals=True, goal=None, test_real=False):
+    def reset(self, new_random_goals=True, goal=None):
         if new_random_goals:
             if self.env_stage == 1 or self.env_stage == 2:
                 self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
@@ -278,7 +279,7 @@ class TurtleBot3Env(gym.Env):
             self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
 
         self.goal_distance = self.old_distance = self._getGoalDistace()
-        state, _ = self.getState(data, test_real=test_real)
+        state, _ = self.getState(data)
 
         return np.asarray(state)
 
