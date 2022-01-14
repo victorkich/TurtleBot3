@@ -135,7 +135,7 @@ class TurtleBot3Env(gym.Env):
     def get_env_state(self):
         return self.lidar_distances
 
-    def getState(self, scan):
+    def getState(self, scan=None):
         scan_range = []
         heading = self.heading
         done = False
@@ -250,36 +250,39 @@ class TurtleBot3Env(gym.Env):
         self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
 
     def reset(self, new_random_goals=True, goal=None):
-        if new_random_goals:
-            if self.env_stage == 1 or self.env_stage == 2:
-                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+        if not self.test_real:
+            if new_random_goals:
+                if self.env_stage == 1 or self.env_stage == 2:
+                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+                else:
+                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
             else:
-                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
-        else:
-            self.respawn_goal.setGoalList(np.array(goal))
+                self.respawn_goal.setGoalList(np.array(goal))
 
-        rospy.wait_for_service('gazebo/reset_simulation')
-        try:
-            self.reset_proxy()
-        except rospy.ServiceException:
-            print("gazebo/reset_simulation service call failed")
-
-        data = None
-        while data is None:
+            rospy.wait_for_service('gazebo/reset_simulation')
             try:
-                data = rospy.wait_for_message('scan_001', LaserScan, timeout=5)
-            except:
-                pass
+                self.reset_proxy()
+            except rospy.ServiceException:
+                print("gazebo/reset_simulation service call failed")
 
-        if self.initGoal:
-            self.goal_x, self.goal_y = self.respawn_goal.getPosition()
-            self.initGoal = False
-            time.sleep(1)
+            data = None
+            while data is None:
+                try:
+                    data = rospy.wait_for_message('scan_001', LaserScan, timeout=5)
+                except:
+                    pass
+
+            if self.initGoal:
+                self.goal_x, self.goal_y = self.respawn_goal.getPosition()
+                self.initGoal = False
+                time.sleep(1)
+            else:
+                self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
+
+            self.goal_distance = self.old_distance = self._getGoalDistace()
+            state, _ = self.getState(data)
         else:
-            self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
-
-        self.goal_distance = self.old_distance = self._getGoalDistace()
-        state, _ = self.getState(data)
+            state = self.getState()
 
         return np.asarray(state)
 
