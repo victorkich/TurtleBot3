@@ -35,7 +35,7 @@ class TurtleBot3Env(gym.Env):
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel_001', Twist, queue_size=5)
         self.sub_odom = rospy.Subscriber('odom_001', Odometry, self.getOdometry)
-        self.sub_image = rospy.Subscriber('usb_cam/image_raw', Image, self.getImage, queue_size=1)
+        self.sub_image = rospy.Subscriber('/usb_cam/image_raw', Image, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
