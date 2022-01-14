@@ -32,8 +32,8 @@ class TurtleBot3Env(gym.Env):
         self.position = Pose()
         self.env_stage = env_stage
 
-        self.pub_cmd_vel = rospy.Publisher('cmd_vel_002', Twist, queue_size=5)
-        self.sub_odom = rospy.Subscriber('odom_002', Odometry, self.getOdometry)
+        self.pub_cmd_vel = rospy.Publisher('cmd_vel_001', Twist, queue_size=5)
+        self.sub_odom = rospy.Subscriber('odom_001', Odometry, self.getOdometry)
         self.sub_image = rospy.Subscriber('usb_cam/image_raw', CompressedImage, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
@@ -224,7 +224,7 @@ class TurtleBot3Env(gym.Env):
         data = None
         while data is None:
             try:
-                data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
+                data = rospy.wait_for_message('/scan_001', LaserScan, timeout=5)
             except Exception:
                 pass
 
@@ -249,25 +249,24 @@ class TurtleBot3Env(gym.Env):
         self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
 
     def reset(self, new_random_goals=True, goal=None, test_real=False):
-        if not test_real:
-            if new_random_goals:
-                if self.env_stage == 1 or self.env_stage == 2:
-                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
-                else:
-                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
+        if new_random_goals:
+            if self.env_stage == 1 or self.env_stage == 2:
+                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
             else:
-                self.respawn_goal.setGoalList(np.array(goal))
+                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
+        else:
+            self.respawn_goal.setGoalList(np.array(goal))
 
-            rospy.wait_for_service('gazebo/reset_simulation')
-            try:
-                self.reset_proxy()
-            except rospy.ServiceException:
-                print("gazebo/reset_simulation service call failed")
+        rospy.wait_for_service('gazebo/reset_simulation')
+        try:
+            self.reset_proxy()
+        except rospy.ServiceException:
+            print("gazebo/reset_simulation service call failed")
 
         data = None
         while data is None:
             try:
-                data = rospy.wait_for_message('scan_002', LaserScan, timeout=5)
+                data = rospy.wait_for_message('scan_001', LaserScan, timeout=5)
             except:
                 pass
 
