@@ -135,7 +135,7 @@ class TurtleBot3Env(gym.Env):
     def get_env_state(self):
         return self.lidar_distances
 
-    def getState(self, scan=None):
+    def getState(self, scan):
         scan_range = []
         heading = self.heading
         done = False
@@ -235,7 +235,7 @@ class TurtleBot3Env(gym.Env):
             state, done = self.getState(data)
             reward = self.setReward(done)
         self.num_timesteps += 1
-        if test_real:
+        if self.test_real:
             return np.asarray(state)
         else:
             return np.asarray(state), reward, done, {}
@@ -282,7 +282,13 @@ class TurtleBot3Env(gym.Env):
             self.goal_distance = self.old_distance = self._getGoalDistace()
             state, _ = self.getState(data)
         else:
-            state = self.getState()
+            data = None
+            while data is None:
+                try:
+                    data = rospy.wait_for_message('scan_001', LaserScan, timeout=5)
+                except:
+                    pass
+            state = self.getState(data)
 
         return np.asarray(state)
 
