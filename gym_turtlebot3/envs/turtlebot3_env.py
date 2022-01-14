@@ -26,7 +26,7 @@ class TurtleBot3Env(gym.Env):
         self.goal_x = 0
         self.goal_y = 0
         self.heading = 0
-        self.image = 0
+        self.image = None
         self.initGoal = True
         self.get_goalbox = False
         self.position = Pose()
@@ -151,7 +151,7 @@ class TurtleBot3Env(gym.Env):
         self.lidar_distances = scan_range
 
         if self.test_real:
-            while self.image == 0:
+            while self.image in None:
                 time.sleep(0.1)
             return [self.get_env_state(), self.image]
 
