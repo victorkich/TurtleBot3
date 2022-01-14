@@ -265,11 +265,11 @@ class TurtleBot3Env(gym.Env):
                 print("gazebo/reset_simulation service call failed")
 
         data = None
-        #while data is None:
-            #try:
-            #    data = rospy.wait_for_message('scan_002', LaserScan, timeout=5)
-            #except:
-            #    pass
+        while data is None:
+            try:
+                data = rospy.wait_for_message('scan_002', LaserScan, timeout=5)
+            except:
+                pass
 
         if self.initGoal:
             self.goal_x, self.goal_y = self.respawn_goal.getPosition()
