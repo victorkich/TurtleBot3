@@ -151,7 +151,7 @@ class TurtleBot3Env(gym.Env):
         self.lidar_distances = scan_range
 
         if self.test_real:
-            while self.image in None:
+            while self.image is None:
                 time.sleep(0.1)
             return [self.get_env_state(), self.image]
 
