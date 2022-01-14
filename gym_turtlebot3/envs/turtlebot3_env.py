@@ -238,7 +238,7 @@ class TurtleBot3Env(gym.Env):
             reward = self.setReward(done)
         self.num_timesteps += 1
         if self.test_real:
-            return state
+            return state, None, None, {}
         else:
             return np.asarray(state), reward, done, {}
 
