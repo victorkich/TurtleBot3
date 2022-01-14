@@ -249,19 +249,20 @@ class TurtleBot3Env(gym.Env):
         self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
 
     def reset(self, new_random_goals=True, goal=None, test_real=False):
-        if new_random_goals:
-            if self.env_stage == 1 or self.env_stage == 2:
-                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+        if not test_real:
+            if new_random_goals:
+                if self.env_stage == 1 or self.env_stage == 2:
+                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)]))
+                else:
+                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
             else:
-                self.respawn_goal.setGoalList(np.asarray([np.random.uniform((0.25, -0.25), (2.75, -2.75)) for _ in range(1)]))
-        else:
-            self.respawn_goal.setGoalList(np.array(goal))
+                self.respawn_goal.setGoalList(np.array(goal))
 
-        rospy.wait_for_service('gazebo/reset_simulation')
-        try:
-            self.reset_proxy()
-        except rospy.ServiceException:
-            print("gazebo/reset_simulation service call failed")
+            rospy.wait_for_service('gazebo/reset_simulation')
+            try:
+                self.reset_proxy()
+            except rospy.ServiceException:
+                print("gazebo/reset_simulation service call failed")
 
         data = None
         while data is None:
