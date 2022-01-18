@@ -33,8 +33,8 @@ class TurtleBot3Env(gym.Env):
         self.env_stage = env_stage
         self.test_real = test_real
 
-        self.pub_cmd_vel = rospy.Publisher('cmd_vel_002', Twist, queue_size=5)
-        self.sub_odom = rospy.Subscriber('odom_002', Odometry, self.getOdometry)
+        self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=5)
+        self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
         self.sub_image = rospy.Subscriber('/usb_cam/image_raw', Image, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
@@ -227,19 +227,17 @@ class TurtleBot3Env(gym.Env):
         data = None
         while data is None:
             try:
-                data = rospy.wait_for_message('/scan_002', LaserScan, timeout=5)
+                data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
             except Exception:
                 pass
 
+        self.num_timesteps += 1
         if self.test_real:
             state = self.getState(data)
+            return state, None, None, {}
         else:
             state, done = self.getState(data)
             reward = self.setReward(done)
-        self.num_timesteps += 1
-        if self.test_real:
-            return state, None, None, {}
-        else:
             return np.asarray(state), reward, done, {}
 
     def get_position(self):
@@ -270,7 +268,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan_002', LaserScan, timeout=5)
+                    data = rospy.wait_for_message('scan', LaserScan, timeout=5)
                 except:
                     pass
 
