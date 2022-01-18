@@ -16,6 +16,8 @@ from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
 
+TURTLE = '003'
+
 
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
@@ -33,8 +35,8 @@ class TurtleBot3Env(gym.Env):
         self.env_stage = env_stage
         self.test_real = test_real
 
-        self.pub_cmd_vel = rospy.Publisher('cmd_vel_002', Twist, queue_size=5)
-        self.sub_odom = rospy.Subscriber('odom_002', Odometry, self.getOdometry)
+        self.pub_cmd_vel = rospy.Publisher('cmd_vel_'+TURTLE, Twist, queue_size=5)
+        self.sub_odom = rospy.Subscriber('odom_'+TURTLE, Odometry, self.getOdometry)
         self.sub_image = rospy.Subscriber('/usb_cam/image_raw', Image, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
@@ -228,7 +230,7 @@ class TurtleBot3Env(gym.Env):
         while data is None:
             try:
                 if self.test_real:
-                    data = rospy.wait_for_message('/scan_002', LaserScan, timeout=5)
+                    data = rospy.wait_for_message('/scan_'+TURTLE, LaserScan, timeout=5)
                 else:
                     data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
             except Exception:
@@ -288,7 +290,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan_002', LaserScan, timeout=5)
+                    data = rospy.wait_for_message('scan_'+TURTLE, LaserScan, timeout=5)
                 except:
                     pass
             state = self.getState(data)
