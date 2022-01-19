@@ -18,6 +18,7 @@ from gym_turtlebot3.envs import Respawn
 
 TURTLE = '002'
 
+
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
