@@ -16,7 +16,7 @@ from gym.utils import seeding
 from gym_turtlebot3.envs.mytf import euler_from_quaternion
 from gym_turtlebot3.envs import Respawn
 
-TURTLE = '006'
+TURTLE = '003'
 
 
 class TurtleBot3Env(gym.Env):
