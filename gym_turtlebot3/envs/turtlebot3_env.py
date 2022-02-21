@@ -252,6 +252,9 @@ class TurtleBot3Env(gym.Env):
     def get_position(self):
         return [self.position.x, self.position.y]
 
+    def get_target_position(self):
+        return [self.goal_x, self.goal_y]
+
     def get_scan(self):
         return self.lidar_distances
 
