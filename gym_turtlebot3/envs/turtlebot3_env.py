@@ -274,7 +274,7 @@ class TurtleBot3Env(gym.Env):
             else:
                 self.respawn_goal.setGoalList(np.array(goal))
 
-            rospy.wait_for_service('gazebo/reset_simulation')
+            rospy.wait_for_service('gazebo/reset_world')
             try:
                 self.reset_proxy()
             except rospy.ServiceException:
