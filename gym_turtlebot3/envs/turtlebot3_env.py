@@ -76,7 +76,7 @@ class TurtleBot3Env(gym.Env):
 
         if self.continuous:
             low, high, shape_value = self.get_action_space_values()
-            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,))
+            self.action_space = spaces.Box(low=np.float32(low), high=np.float32(high), shape=(shape_value,), dtype=np.float32)
         else:
             self.action_space = spaces.Discrete(action_size)
             ang_step = max_ang_vel / ((action_size - 1) / 2)
