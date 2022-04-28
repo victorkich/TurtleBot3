@@ -51,7 +51,7 @@ class TurtleBot3Env(gym.Env):
 
         if not goal_list:
             if self.env_stage == 1 or self.env_stage == 2:
-                goal_list = np.asarray([np.random.uniform((-1.5, -1.5), (1.5, 1.5)) for _ in range(1)])
+                goal_list = np.asarray([np.random.uniform((-1., -1.), (1., 1.)) for _ in range(1)])
             else:
                 goal_list = np.array([np.random.uniform((0, 0), (3, -3)) for _ in range(1)])
         else:
@@ -265,7 +265,7 @@ class TurtleBot3Env(gym.Env):
         if not self.test_real:
             if new_random_goals:
                 if self.env_stage == 1 or self.env_stage == 2:
-                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.85, -1.85), (1.85, 1.85)) for _ in range(1)]))
+                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.2, -1.2), (1.2, 1.2)) for _ in range(1)]))
                 else:
                     val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
                     #while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
@@ -305,7 +305,7 @@ class TurtleBot3Env(gym.Env):
                     pass
             state = self.getState(data)
 
-        return state
+        return np.array(state)
 
     def render(self, mode=True):
         pass
