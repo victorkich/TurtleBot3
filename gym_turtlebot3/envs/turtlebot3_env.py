@@ -163,7 +163,7 @@ class TurtleBot3Env(gym.Env):
 
         time_info = self.get_time_info()
         current_distance = self._getGoalDistace()
-        if min(self.lidar_distances) < self.collision_distance:
+        #if min(self.lidar_distances) < self.collision_distance:
             # print(f'{time_info}: Collision!!')
             #done = True
 
@@ -247,6 +247,7 @@ class TurtleBot3Env(gym.Env):
         else:
             state, done = self.getState(data)
             reward = self.setReward(done)
+            
             return np.asarray(state), reward, done, {}
 
     def get_position(self):
