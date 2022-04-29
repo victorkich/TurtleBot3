@@ -165,15 +165,15 @@ class TurtleBot3Env(gym.Env):
         current_distance = self._getGoalDistace()
         if min(self.lidar_distances) < self.collision_distance:
             # print(f'{time_info}: Collision!!')
-            done = True
+            #done = True
 
         if current_distance < self.goalbox_distance:
             if not done:
                 # print(f'{time_info}: Goal!!')
                 self.get_goalbox = True
-                if self.respawn_goal.last_index is (self.respawn_goal.len_goal_list - 1):
-                    done = True
-                    self.episode_finished()
+                #if self.respawn_goal.last_index is (self.respawn_goal.len_goal_list - 1):
+                    #done = True
+                    #self.episode_finished()
         return self.get_env_state() + [heading, current_distance], done
 
     def get_done_reward(self, lidar, distance):
@@ -206,7 +206,7 @@ class TurtleBot3Env(gym.Env):
                 #self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
                 self.goal_distance = self._getGoalDistace()
         else:
-            reward = 0
+            reward = 0.
         return reward
 
     def set_ang_vel(self, action):
