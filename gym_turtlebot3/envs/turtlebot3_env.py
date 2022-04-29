@@ -22,7 +22,7 @@ TURTLE = '003'
 class TurtleBot3Env(gym.Env):
     def __init__(self, observation_mode=0, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
                  action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
-                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.18, reward_goal=200.,
+                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.18, reward_goal=1.,
                  reward_collision=-20, angle_out=250, goal_list=None, test_real=False):
 
         self.goal_x = 0
@@ -194,16 +194,16 @@ class TurtleBot3Env(gym.Env):
     def setReward(self, done):
         if self.get_goalbox:
             reward = self.reward_goal
-            self.pub_cmd_vel.publish(Twist())
-            self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
+            #self.pub_cmd_vel.publish(Twist())
+            #self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
         elif done:
-            reward = self.reward_collision =- 20.
-            self.pub_cmd_vel.publish(Twist())
+            reward = self.reward_collision = 0.
+            #self.pub_cmd_vel.publish(Twist())
             if self.respawn_goal.last_index != 0:
                 self.respawn_goal.initIndex()
-                self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
+                #self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
                 self.goal_distance = self._getGoalDistace()
         else:
             reward = 0
