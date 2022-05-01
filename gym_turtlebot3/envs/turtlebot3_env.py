@@ -311,4 +311,4 @@ class TurtleBot3Env(gym.Env):
         pass
 
     def close(self):
-        self.reset()
+        rospy.signal_shutdown("Gym closed.")
