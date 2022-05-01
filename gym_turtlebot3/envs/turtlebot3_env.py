@@ -5,6 +5,7 @@ import gym
 import numpy as np
 import math
 import time
+import os
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist, Point, Pose
 from sensor_msgs.msg import Image
@@ -312,3 +313,4 @@ class TurtleBot3Env(gym.Env):
 
     def close(self):
         rospy.signal_shutdown("Gym closed.")
+        os.system("kill $(ps aux | grep gzserver | grep -v grep | awk '{print $2}')")
