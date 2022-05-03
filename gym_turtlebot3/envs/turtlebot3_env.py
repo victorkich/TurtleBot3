@@ -31,6 +31,7 @@ class TurtleBot3Env(gym.Env):
         self.image = None
         self.initGoal = True
         self.get_goalbox = False
+        self.collission = False
         self.position = Pose()
         self.env_stage = env_stage
         self.test_real = test_real
@@ -163,9 +164,9 @@ class TurtleBot3Env(gym.Env):
 
         time_info = self.get_time_info()
         current_distance = self._getGoalDistace()
-        #if min(self.lidar_distances) < self.collision_distance:
+        if min(self.lidar_distances) < self.collision_distance:
             # print(f'{time_info}: Collision!!')
-            #done = True
+            self.collission = True
 
         if current_distance < self.goalbox_distance:
             if not done:
@@ -198,8 +199,9 @@ class TurtleBot3Env(gym.Env):
             #self.goal_x, self.goal_y = self.respawn_goal.getPosition(True, delete=True)
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
-        elif done:
-            reward = self.reward_collision = 0.
+        elif self.collission:
+            reward = self.reward_collision = -1.
+            self.collission = False
             #self.pub_cmd_vel.publish(Twist())
             if self.respawn_goal.last_index != 0:
                 self.respawn_goal.initIndex()
