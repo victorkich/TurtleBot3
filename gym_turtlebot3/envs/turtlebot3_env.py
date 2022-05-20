@@ -77,7 +77,7 @@ class TurtleBot3Env(gym.Env):
 
         if self.continuous:
             low, high, shape_value = self.get_action_space_values()
-            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,))
+            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,), dtype=np.float64)
         else:
             self.action_space = spaces.Discrete(action_size)
             ang_step = max_ang_vel / ((action_size - 1) / 2)
@@ -267,9 +267,22 @@ class TurtleBot3Env(gym.Env):
     def reset(self, new_random_goals=True, goal=None):
         if not self.test_real:
             if new_random_goals:
-                if self.env_stage == 1 or self.env_stage == 2:
-                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.2, -1.2), (1.2, 1.2)) for _ in range(1)]))
-                else:
+                if self.env_stage == 1:
+                    val = np.random.uniform((-1.65, -1.65), (1.65, 1.65))
+                    self.respawn_goal.setGoalList(val)
+                elif self.env_stage == 2:
+                    val = np.random.uniform((-1.65, -1.65), (1.65, 1.65))
+                    while True:
+                        break 
+                    self.respawn_goal.setGoalList(val)
+
+                elif self.env_stage == 3:
+                    val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
+                    #while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
+                    #    val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
+                    self.respawn_goal.setGoalList(np.asarray([val]))
+
+                elif self.env_stage == 4:
                     val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
                     #while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
                     #    val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
@@ -277,7 +290,7 @@ class TurtleBot3Env(gym.Env):
             else:
                 self.respawn_goal.setGoalList(np.array(goal))
 
-            rospy.wait_for_service('gazebo/reset_simulation')
+            rospy.wait_for_service('gazebo/reset_world')
             try:
                 self.reset_proxy()
             except rospy.ServiceException:
