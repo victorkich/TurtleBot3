@@ -68,7 +68,10 @@ class Respawn:
             if self.check_model:
                 rospy.wait_for_service('gazebo/delete_model')
                 del_model_prox = rospy.ServiceProxy('gazebo/delete_model', DeleteModel)
-                del_model_prox(self.modelName)
+                try:
+                    del_model_prox(self.modelName)
+                except:
+                    print('Error on del_model_prox')
                 break
             else:
                 pass
