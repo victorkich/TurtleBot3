@@ -269,7 +269,7 @@ class TurtleBot3Env(gym.Env):
             if new_random_goals:
                 if self.env_stage == 1:
                     val = np.random.uniform((-1.25, -1.25), (1.25, 1.25))
-                    self.respawn_goal.setGoalList(val)
+                    self.respawn_goal.setGoalList(np.asarray([val])
                 elif self.env_stage == 2:
                     val = np.random.uniform((-1.65, -1.65), (1.65, 1.65))
                     while True:
@@ -283,7 +283,7 @@ class TurtleBot3Env(gym.Env):
                             val = np.random.uniform((-1.25, -1.25), (1.25, 1.25))
                         else:
                             break
-                    self.respawn_goal.setGoalList(val)
+                    self.respawn_goal.setGoalList(np.asarray([val])
 
                 elif self.env_stage == 3:
                     val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
