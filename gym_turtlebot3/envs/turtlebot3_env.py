@@ -200,7 +200,7 @@ class TurtleBot3Env(gym.Env):
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
         elif self.collission:
-            reward = self.reward_collision = -1.
+            reward = self.reward_collision = -0.1
             self.collission = False
             #self.pub_cmd_vel.publish(Twist())
             if self.respawn_goal.last_index != 0:
