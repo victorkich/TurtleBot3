@@ -37,8 +37,8 @@ class TurtleBot3Env(gym.Env):
         self.test_real = test_real
 
         if self.test_real:
-            self.pub_cmd_vel = rospy.Publisher('cmd_vel_'+TURTLE, Twist, queue_size=1)
-            self.sub_odom = rospy.Subscriber('odom_'+TURTLE, Odometry, self.getOdometry)
+            self.pub_cmd_vel = rospy.Publisher('cmd_vel_' + TURTLE, Twist, queue_size=1)
+            self.sub_odom = rospy.Subscriber('odom_' + TURTLE, Odometry, self.getOdometry)
         else:
             self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
             self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
@@ -108,7 +108,8 @@ class TurtleBot3Env(gym.Env):
 
     def get_observation_space_values(self):
         low = np.append(np.full(self.observation_size, self.min_range), np.array([-math.pi, 0], dtype=np.float32))
-        high = np.append(np.full(self.observation_size, self.max_range), np.array([math.pi, self.max_env_size], dtype=np.float32))
+        high = np.append(np.full(self.observation_size, self.max_range),
+                         np.array([math.pi, self.max_env_size], dtype=np.float32))
         return low, high
 
     def _getGoalDistace(self):
@@ -200,7 +201,7 @@ class TurtleBot3Env(gym.Env):
             self.goal_distance = self._getGoalDistace()
             self.get_goalbox = False
         elif done:
-            reward = self.reward_collision =- 20.
+            reward = self.reward_collision = - 20.
             self.pub_cmd_vel.publish(Twist())
             if self.respawn_goal.last_index != 0:
                 self.respawn_goal.initIndex()
@@ -235,10 +236,10 @@ class TurtleBot3Env(gym.Env):
         while data is None:
             try:
                 if self.test_real:
-                    data = rospy.wait_for_message('/scan_'+TURTLE, LaserScan, timeout=5)
+                    data = rospy.wait_for_message('/scan_' + TURTLE, LaserScan, timeout=5)
                 else:
                     data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
-            except Exception:
+            except:
                 pass
 
         self.num_timesteps += 1
@@ -266,10 +267,11 @@ class TurtleBot3Env(gym.Env):
         if not self.test_real:
             if new_random_goals:
                 if self.env_stage == 1 or self.env_stage == 2:
-                    self.respawn_goal.setGoalList(np.asarray([np.random.uniform((-1.65, -1.65), (1.65, 1.65)) for _ in range(1)]))
+                    self.respawn_goal.setGoalList(
+                        np.asarray([np.random.uniform((-1.65, -1.65), (1.65, 1.65)) for _ in range(1)]))
                 else:
                     val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
-                    #while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
+                    # while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
                     #    val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
                     self.respawn_goal.setGoalList(np.asarray([val]))
             else:
@@ -301,7 +303,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan_'+TURTLE, LaserScan, timeout=5)
+                    data = rospy.wait_for_message('scan_' + TURTLE, LaserScan, timeout=5)
                 except:
                     pass
             state = self.getState(data)
