@@ -236,9 +236,9 @@ class TurtleBot3Env(gym.Env):
         while data is None:
             try:
                 if self.test_real:
-                    data = rospy.wait_for_message('/scan_' + TURTLE, LaserScan, timeout=5)
+                    data = rospy.wait_for_message('/scan_' + TURTLE, LaserScan, timeout=15)
                 else:
-                    data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
+                    data = rospy.wait_for_message('/scan', LaserScan, timeout=15)
             except:
                 pass
 
@@ -286,7 +286,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan', LaserScan, timeout=5)
+                    data = rospy.wait_for_message('scan', LaserScan, timeout=15)
                 except:
                     pass
 
@@ -303,7 +303,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan_' + TURTLE, LaserScan, timeout=5)
+                    data = rospy.wait_for_message('scan_' + TURTLE, LaserScan, timeout=15)
                 except:
                     pass
             state = self.getState(data)
