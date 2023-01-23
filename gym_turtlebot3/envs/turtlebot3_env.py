@@ -176,6 +176,7 @@ class TurtleBot3Env(gym.Env):
                 if self.respawn_goal.last_index is (self.respawn_goal.len_goal_list - 1):
                     done = True
                     self.episode_finished()
+        current_distance = np.sqrt(32) / (current_distance + 1)
         return self.get_env_state() + [heading, current_distance], done
 
     def get_done_reward(self, lidar, distance):
