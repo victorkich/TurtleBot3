@@ -8,7 +8,7 @@ import time
 import os
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Twist, Point, Pose
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from std_srvs.srv import Empty
@@ -42,7 +42,7 @@ class TurtleBot3Env(gym.Env):
         else:
             self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
             self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
-        self.sub_image = rospy.Subscriber('/usb_cam/image_raw', Image, self.getImage, queue_size=1)
+        self.sub_image = rospy.Subscriber('/camera_2/image_raw/compressed', CompressedImage, self.getImage, queue_size=1)
 
         self.reset_proxy = rospy.ServiceProxy('gazebo/reset_simulation', Empty)
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
