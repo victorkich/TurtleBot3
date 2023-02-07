@@ -262,7 +262,7 @@ class TurtleBot3Env(gym.Env):
         return self.lidar_distances
 
     def getImage(self, image):
-        self.image = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
+        self.image = self.bridge.compressed_imgmsg_to_cv2(msg)
 
     def reset(self, new_random_goals=True, goal=None):
         if not self.test_real:
