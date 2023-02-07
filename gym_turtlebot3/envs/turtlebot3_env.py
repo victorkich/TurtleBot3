@@ -77,14 +77,14 @@ class TurtleBot3Env(gym.Env):
 
         if self.continuous:
             low, high, shape_value = self.get_action_space_values()
-            self.action_space = spaces.Box(low=low, high=high, shape=(shape_value,))
+            self.action_space = spaces.Box(low=float(low), high=float(high), shape=(shape_value,))
         else:
             self.action_space = spaces.Discrete(action_size)
             ang_step = max_ang_vel / ((action_size - 1) / 2)
             self.actions = [((action_size - 1) / 2 - action) * ang_step for action in range(action_size)]
 
         low, high = self.get_observation_space_values()
-        self.observation_space = spaces.Box(low, high)
+        self.observation_space = spaces.Box(float(low), float(high))
 
         self.num_timesteps = 0
         self.lidar_distances = None
