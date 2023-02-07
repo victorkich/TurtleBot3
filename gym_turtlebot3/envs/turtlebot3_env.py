@@ -304,7 +304,7 @@ class TurtleBot3Env(gym.Env):
             data = None
             while data is None:
                 try:
-                    data = rospy.wait_for_message('scan_' + TURTLE, LaserScan, timeout=15)
+                    data = rospy.wait_for_message('scan', LaserScan, timeout=15)
                 except:
                     pass
             state = self.getState(data)
