@@ -26,6 +26,7 @@ class TurtleBot3Env(gym.Env):
                  max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.18, reward_goal=200.,
                  reward_collision=-20, angle_out=250, goal_list=None, test_real=False):
 
+        self.bridge = CvBridge()
         self.goal_x = 0
         self.goal_y = 0
         self.heading = 0
@@ -48,7 +49,6 @@ class TurtleBot3Env(gym.Env):
         self.unpause_proxy = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         self.respawn_goal = Respawn()
-        self.bridge = CvBridge()
 
         if not goal_list:
             if self.env_stage == 1 or self.env_stage == 2:
