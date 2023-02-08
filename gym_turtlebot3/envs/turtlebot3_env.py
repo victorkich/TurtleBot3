@@ -225,8 +225,6 @@ class TurtleBot3Env(gym.Env):
             self.linear_vel = self.actions[action]
 
     def step(self, action):
-        if self.test_real:
-            return None, None, None, None
         self.set_ang_vel(np.clip(action[0], self.min_ang_vel, self.max_ang_vel))
         self.set_linear_vel(np.clip(action[1], self.min_linear_vel, self.max_linear_vel))
 
@@ -234,6 +232,9 @@ class TurtleBot3Env(gym.Env):
         vel_cmd.linear.x = self.linear_vel
         vel_cmd.angular.z = self.ang_vel
         self.pub_cmd_vel.publish(vel_cmd)
+
+        if self.test_real:
+            return None, None, None, None
 
         data = None
         while data is None:
