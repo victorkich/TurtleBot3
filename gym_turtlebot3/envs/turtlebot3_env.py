@@ -38,8 +38,8 @@ class TurtleBot3Env(gym.Env):
         self.test_real = test_real
 
         if self.test_real:
-            self.pub_cmd_vel = rospy.Publisher('cmd_vel_' + TURTLE, Twist, queue_size=1)
-            self.sub_odom = rospy.Subscriber('odom_' + TURTLE, Odometry, self.getOdometry)
+            self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+            self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
         else:
             self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
             self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
